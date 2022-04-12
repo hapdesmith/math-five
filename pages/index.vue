@@ -111,8 +111,12 @@
       <div v-else class="flex flex-col justify-center content-center h-full py-2">
         <MathRules/>
         <button class="bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium" @click="startMath">Show Me the Math!</button>
+        <p class="text-center text-base text-stale-300 mt-2">made by <a href="https://twitter.com/agungdlgs" class="underline text-sky-600 text-base font-bold" target="_blank">@agungdlgs</a></p>
       </div>
     </main>
+    <div v-show="snackbarToggle" class="fixed top-2 left-2 right-2 px-2 py-1 bg-slate-600 text-white text-center text-base rounded capitalize">
+      {{ snackbar }}
+    </div>
   </div>
 </template>
 <script>
@@ -134,6 +138,8 @@ export default {
     result: [],
     isStarted: false,
     baseTime: 3,
+    snackbar: 'sdfsdfsd dsa fsadf ',
+    snackbarToggle: false,
   }),
   computed: {
     ...mapGetters([
@@ -189,10 +195,8 @@ export default {
     // init forage for 1st time play
     const getForage = await this.$localForage.getItem('mathfive');
     if (!!getForage) {
-      console.log(getForage)
       await this.$nextTick();
       await this.setStore(getForage); // hydrate store from forage
-      
     } else {
       await this.$localForage.setItem('mathfive', this.getAllStore); // if no forage, set forage from default store
     }
@@ -321,6 +325,15 @@ export default {
           document.body.removeChild(textarea);
         }
       }
+      this.showSnackbar('copied to clipboard');
+    },
+    showSnackbar(msg) {
+      this.snackbar = msg;
+      this.snackbarToggle = true;
+      setTimeout(() => {
+        this.snackbarToggle = false;
+        this.snackbar = '';
+      }, 2000)
     }
   }
 }
