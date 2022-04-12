@@ -64,7 +64,7 @@
             Average Time
           </div>
         </div>
-        <button class="mt-2 w-full bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium uppercase" @click="shareIt">Share Result</button>
+        <button class="mt-2 w-full bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium uppercase" @click="shareIt">Copy to Clipboard</button>
       </div>
       <div v-else-if="isEnded" class="h-full flex-col flex justify-between text-center py-2">
         <div>
@@ -321,7 +321,6 @@ export default {
           document.body.removeChild(textarea);
         }
       }
-      console.log(text);
     }
   }
 }
