@@ -304,7 +304,7 @@ export default {
       this.getAllStats.form.forEach(x => {
         form = form + this.getTextClassForm(x).icon;
       })
-      const text = `i'm ${this.rankMapping} ${star} - ${form} - www.mathfive.com`;
+      const text = `i'm ${this.rankMapping} ${star} - ${form} - https://math-five-apps.vercel.app/`;
       if (window.clipboardData && window.clipboardData.setData) {
         window.clipboardData.setData('Text', text);
       } else if (document.queryCommandSupported && document.queryCommandSupported('copy')) {
