@@ -1,7 +1,7 @@
 <template>
 <div class="text-center">
-  <div class="text-left border-2 bg-white border-slate-100 p-2 absolute inset-0 flex flex-col justify-between" v-show="toggle">
-    <div>
+  <div class="text-left bg-white p-2 absolute inset-0 flex flex-col justify-between" v-show="toggle">
+    <div class="pb-9">
       <p class="border-0 border-b-2 border-slate-100 text-slate-500 text-sm font-bold uppercase pb-1 mb-1">Rank & Star System :</p>
       <ul class="list-inside list-decimal mb-4 leading-5">
         <li class="mb-2">
@@ -39,7 +39,7 @@
       </ul>
       
     </div>
-    <button @click="toggle=!toggle" class="text-center uppercase bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-sm font-medium">Close Game Rules</button>
+    <button @click="toggle=!toggle" class="fixed bottom-2 left-2 right-2 text-center uppercase bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-sm font-medium">Close Game Rules</button>
   </div>
   <p @click="toggle=!toggle" class="mb-4 mt-2 text-sky-600 text-base font-medium underline">
     Read Game Rules
