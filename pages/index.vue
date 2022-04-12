@@ -82,7 +82,6 @@
           </div>
         </div>
         <div>
-        <!-- <p class="block text-3xl text-sky-600 text-center font-black mb-4 uppercase">{{ getFeedbackMsg }}</p> -->
         <template v-if="isHighestRank">
           <button v-if="isEligibleStarDown" @click="goPrevRankStar" class="w-full bg-rose-600 hover:bg-rose-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium uppercase">Prev Rank</button>
           <button v-else @click="retry" class="w-full bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium uppercase">Try Again</button>
@@ -308,7 +307,7 @@ export default {
       this.getAllStats.form.forEach(x => {
         form = form + this.getTextClassForm(x).icon;
       })
-      const text = `i'm ${this.rankMapping} ${star} - ${form} - https://math-five-apps.vercel.app/`;
+      const text = `i'm ${this.rankMapping} ${star} - ${form} - https://mathfive.vercel.app/`;
       if (window.clipboardData && window.clipboardData.setData) {
         window.clipboardData.setData('Text', text);
       } else if (document.queryCommandSupported && document.queryCommandSupported('copy')) {
