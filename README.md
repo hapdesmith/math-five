@@ -1,4 +1,4 @@
-# math-apps
+# MATHFIVE
 Simple math game, with rank and star system. You can copy and paste your result to twitter or other sosial media.
 
 ## RANK & STAR SYSTEM :
@@ -16,13 +16,21 @@ Simple math game, with rank and star system. You can copy and paste your result 
 5. Copy your result and paste it to twitter or other social media ;) and tag me @agungdlgs
 6. There are 5 simple math questions each round. Difficulty is based on your rank and star. 
     example SILVER rank:
+    
         `2 + 3 - 4`
+    
     example DIAMOND rank:
+    
         `2 + 3 - 4 * 3 / 9`
+        
 7. if there is decimal answer because of divison operator, round it to the bottom unit. for example:
+        
         `2 + 3 - 4 * 3 / 9`
+        
     answer is 3 not 3.66667
+        
         `2/4 - 5`
+        
     answer is -5 not -4.5`
 
 ## Build Setup
