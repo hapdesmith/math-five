@@ -1,10 +1,11 @@
 # MATHFIVE
-Simple math game, with rank and star system. You can copy and paste your result to twitter or other sosial media.
+Simple math mobile game, with rank and star system. You can copy and paste your result to twitter or other sosial media. 
+`best view from mobile phone`
 
 ## RANK & STAR SYSTEM :
 
-1. There are 5 ranks BRONZE SILVER GOLD DIAMOND GOAT
-2. Every time you complete a round, you will be given 1 star
+1. There are 5 ranks `BRONZE, SILVER, GOLD, DIAMOND, GOAT`
+2. Every time you complete a round, `you will be given 1 star`
 3. After collecting 5 stars, your rank will be increased and start with one star in next round`
 
 ## GENERAL RULES:
