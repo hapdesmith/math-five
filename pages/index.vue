@@ -122,14 +122,14 @@
           </div>
         </div>
         <div class="w-full h-20" />
-        <div class="fixed bottom-2 left-2 right-2 flex flex-col gap-2">
+        <div class="fixed bottom-0 left-0 right-0 flex flex-col p-2 gap-2 bg-white shadow-lg shadow-slate-100 border-t-2 border-slate-100">
           <div class="flex gap-2">
             <button
               type="button"
               class="flex-1 bg-violet-600 hover:bg-violet-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-sm font-semibold uppercase"
-              @click="shareCopyImage"
+              @click="downloadShareImage"
             >
-              Salin gambar
+              Download gambar
             </button>
             <button
               type="button"
@@ -139,9 +139,6 @@
               Teks + link
             </button>
           </div>
-          <p class="text-center text-xs text-slate-400 px-1">
-            Gambar untuk tempel visual; teks berisi link untuk keterangan / bio.
-          </p>
         </div>
       </div>
       <div v-else-if="isEnded" class="h-full flex-col flex justify-between text-center py-2">
@@ -574,23 +571,25 @@ export default {
         this.showSnackbar(`Gagal salin teks. [${error}]`)
       }
     },
-    async shareCopyImage () {
+    async downloadShareImage () {
       try {
-        if (!navigator.clipboard || !window.ClipboardItem) {
-          this.showSnackbar('Browser tidak mendukung salin gambar')
-          return
-        }
         const blob = await this.buildShareImageBlob()
         if (!blob) {
           this.showSnackbar('Gagal membuat gambar')
           return
         }
-        await navigator.clipboard.write([
-          new ClipboardItem({ [blob.type]: Promise.resolve(blob) })
-        ])
-        this.showSnackbar('Gambar disalin — tempel di sosmed')
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'mathfive-badge.png'
+        a.rel = 'noopener'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(() => URL.revokeObjectURL(url), 2500)
+        this.showSnackbar('Gambar diunduh — unggah dari galeri / file')
       } catch (error) {
-        this.showSnackbar(`Gagal salin gambar (izin / HTTPS). [${error}]`)
+        this.showSnackbar(`Gagal unduh gambar. [${error}]`)
       }
     },
     latestOutcomeKey (rslt) {
