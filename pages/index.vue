@@ -291,13 +291,13 @@
           </div>
         </div>
       </div>
-      <div v-else class="flex flex-col justify-center content-center h-full py-2">
+      <div v-else class="flex flex-col justify-center content-center h-full py-2 gap-2">
         <MathRules :is-read-rules="getConfig.isReadRules" @closeRules="closeRules" />
-        <button class="bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium" @click="startMath">
+        <button class="bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium animate-pulse" @click="startMath">
           Show Me the Math!
         </button>
-        <p class="text-center text-base text-stale-300 mt-2">
-          made by <a href="https://twitter.com/agungdlgs" class="underline text-sky-600 text-base font-bold" target="_blank">@agungdlgs</a>
+        <p class="text-center text-base text-stale-300">
+          made by <a href="https://linkedin.com/in/agungdlgs" class="underline text-sky-600 text-base font-bold" target="_blank">@agungdlgs</a>
         </p>
       </div>
     </main>

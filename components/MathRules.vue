@@ -59,7 +59,7 @@
         Close Game Rules
       </button>
     </div>
-    <p class="mb-4 mt-2 text-sky-600 text-base font-medium underline" @click="isOpen=true">
+    <p class="text-sky-600 text-base font-medium underline" @click="isOpen=true">
       Read Game Rules
       <svg
         xmlns="http://www.w3.org/2000/svg"
