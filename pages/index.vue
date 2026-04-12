@@ -121,10 +121,28 @@
             </p>
           </div>
         </div>
-        <div class="w-full h-14" />
-        <button class="fixed bottom-2 left-2 right-2 bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium uppercase" @click="shareIt">
-          Copy to Clipboard
-        </button>
+        <div class="w-full h-20" />
+        <div class="fixed bottom-2 left-2 right-2 flex flex-col gap-2">
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 bg-violet-600 hover:bg-violet-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-sm font-semibold uppercase"
+              @click="shareCopyImage"
+            >
+              Salin gambar
+            </button>
+            <button
+              type="button"
+              class="flex-1 bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-sm font-semibold uppercase"
+              @click="shareCopyText"
+            >
+              Teks + link
+            </button>
+          </div>
+          <p class="text-center text-xs text-slate-400 px-1">
+            Gambar untuk tempel visual; teks berisi link untuk keterangan / bio.
+          </p>
+        </div>
       </div>
       <div v-else-if="isEnded" class="h-full flex-col flex justify-between text-center py-2">
         <div>
@@ -197,11 +215,11 @@
             <div :class="`text-sky-600 ${getQuestionClass} font-black mb-4`">
               {{ qst.question }}
             </div>
-            <div class="flex flex-col gap-3 text-left w-full mx-auto">
+            <div class="flex flex-col gap-5 text-left w-full mx-auto">
               <label
                 v-for="(opt, optIdx) in qst.choices"
                 :key="`${index}-${optIdx}-${opt}`"
-                class="flex items-center gap-3 p-2 border-2 border-slate-200 rounded cursor-pointer hover:border-sky-300 transition ease-in-out duration-300 has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50"
+                class="flex items-center gap-3 py-5 px-2 border-2 border-slate-200 rounded cursor-pointer hover:border-sky-300 transition ease-in-out duration-300 has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50"
               >
                 <input
                   type="radio"
@@ -210,7 +228,7 @@
                   :value="opt"
                   @change="confirmAnswer(qst, opt)"
                 >
-                <span class="text-sky-700 font-semibold text-lg">{{ opt }}</span>
+                <span class="text-sky-700 font-semibold text-xl">{{ opt }}</span>
               </label>
             </div>
           </div>
@@ -235,6 +253,8 @@
 import { mapGetters, mapActions, mapMutations } from 'vuex'
 import MathQuestion from '@/models/math-game'
 import MathHeader from '@/components/MathHeader.vue'
+
+const SHARE_SITE_PATH = '/'
 
 export default {
   name: 'IndexPage',
@@ -367,6 +387,212 @@ export default {
         css: css[rank]
       }
     },
+    getShareSiteUrl () {
+      if (typeof window === 'undefined') { return 'https://mathfive.vercel.app/' }
+      return `${window.location.origin}${SHARE_SITE_PATH}`
+    },
+    getShareCaptionText () {
+      let star = ''
+      for (let i = 0; i < this.getInitStats.star; i++) {
+        star += '⭐'
+      }
+      let form = ''
+      ;(this.getAllStats.form || []).forEach((x) => {
+        form += this.getTextClassForm(x).icon
+      })
+      const rank = this.rankMapping === '-' ? '-' : this.rankMapping
+      return `MATHFIVE — ${rank} ${star} — ${form}\n${this.getShareSiteUrl()}`
+    },
+    copyPlainText (text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text)
+      }
+      return new Promise((resolve, reject) => {
+        try {
+          if (window.clipboardData && window.clipboardData.setData) {
+            window.clipboardData.setData('Text', text)
+            resolve()
+            return
+          }
+          if (document.queryCommandSupported && document.queryCommandSupported('copy')) {
+            const textarea = document.createElement('textarea')
+            textarea.textContent = text
+            textarea.style.position = 'fixed'
+            document.body.appendChild(textarea)
+            textarea.select()
+            document.execCommand('copy')
+            document.body.removeChild(textarea)
+            resolve()
+            return
+          }
+          reject(new Error('no clipboard API'))
+        } catch (e) {
+          reject(e)
+        }
+      })
+    },
+    shareRankPillFill () {
+      const map = {
+        bronze: '#d97706',
+        silver: '#94a3b8',
+        gold: '#ca8a04',
+        diamond: '#86198f',
+        goat: '#be123c'
+      }
+      return map[this.rankMapping] || '#64748b'
+    },
+    formStrokeColor (form) {
+      if (form === 1) { return '#059669' }
+      if (form === -1) { return '#e11d48' }
+      return '#94a3b8'
+    },
+    roundRectPath (ctx, x, y, w, h, r) {
+      ctx.beginPath()
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(x, y, w, h, r)
+      } else {
+        const rr = Math.min(r, w / 2, h / 2)
+        ctx.moveTo(x + rr, y)
+        ctx.arcTo(x + w, y, x + w, y + h, rr)
+        ctx.arcTo(x + w, y + h, x, y + h, rr)
+        ctx.arcTo(x, y + h, x, y, rr)
+        ctx.arcTo(x, y, x + w, y, rr)
+        ctx.closePath()
+      }
+    },
+    drawMortarboard (ctx, cx, cy, size, strokeColor) {
+      const s = size / 24
+      ctx.save()
+      ctx.translate(cx - 12 * s, cy - 12 * s)
+      ctx.scale(s, s)
+      ctx.strokeStyle = strokeColor
+      ctx.lineWidth = 2
+      ctx.lineJoin = 'round'
+      ctx.lineCap = 'round'
+      ctx.stroke(new Path2D('M12 14l9-5-9-5-9 5 9 5z'))
+      ctx.stroke(new Path2D('M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z'))
+      ctx.beginPath()
+      ctx.moveTo(8, 20)
+      ctx.lineTo(8, 12.5)
+      ctx.stroke()
+      ctx.restore()
+    },
+    drawStarShape (ctx, cx, cy, outerR, fillStyle) {
+      const innerR = outerR * 0.4
+      ctx.beginPath()
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? outerR : innerR
+        const a = (Math.PI / 2) + (i * Math.PI) / 5
+        const x = cx + r * Math.cos(a)
+        const y = cy - r * Math.sin(a)
+        if (i === 0) { ctx.moveTo(x, y) } else { ctx.lineTo(x, y) }
+      }
+      ctx.closePath()
+      ctx.fillStyle = fillStyle
+      ctx.fill()
+    },
+    drawShareBadge (ctx, w, h) {
+      const pad = 18
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, w, h)
+      ctx.textBaseline = 'middle'
+      ctx.font = 'bold 26px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      ctx.fillStyle = '#0284c7'
+      const titleY = 28
+      ctx.fillText('MATH', pad, titleY)
+      const wMath = ctx.measureText('MATH').width
+      ctx.font = '26px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      ctx.fillStyle = '#cbd5e1'
+      ctx.fillText('FIVE', pad + wMath, titleY)
+      const rankStarsY = 58
+      let x = pad
+      const rankLabel = (this.rankMapping === '-' ? '-' : String(this.rankMapping)).toUpperCase()
+      ctx.font = 'bold 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      const tw = ctx.measureText(rankLabel).width
+      const pillW = Math.max(tw + 22, 52)
+      const pillH = 22
+      const pillY = rankStarsY - pillH / 2
+      ctx.fillStyle = this.shareRankPillFill()
+      this.roundRectPath(ctx, x, pillY, pillW, pillH, 11)
+      ctx.fill()
+      ctx.fillStyle = '#f8fafc'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(rankLabel, x + pillW / 2 - tw / 2, rankStarsY)
+      x += pillW + 10
+      const nStar = Math.min(Math.max(Number(this.getInitStats.star) || 0, 0), 5)
+      for (let i = 0; i < nStar; i++) {
+        this.drawStarShape(ctx, x + 10, rankStarsY, 9, '#facc15')
+        x += 22
+      }
+      const formRowY = 96
+      let xf = pad
+      const forms = this.getAllStats.form || []
+      forms.forEach((f) => {
+        this.drawMortarboard(ctx, xf + 11, formRowY, 22, this.formStrokeColor(f))
+        xf += 26
+      })
+    },
+    buildShareImageBlob () {
+      return new Promise((resolve) => {
+        const pad = 18
+        const forms = this.getAllStats.form || []
+        const rankLabel = (this.rankMapping === '-' ? '-' : String(this.rankMapping)).toUpperCase()
+        const temp = document.createElement('canvas').getContext('2d')
+        temp.font = 'bold 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+        const tw = temp.measureText(rankLabel).width
+        const pillW = Math.max(tw + 22, 52)
+        const nStar = Math.min(Math.max(Number(this.getInitStats.star) || 0, 0), 5)
+        const rowRankStarsW = pad + pillW + 10 + nStar * 22 + pad
+        temp.font = 'bold 26px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+        const wMathTitle = temp.measureText('MATH').width
+        temp.font = '26px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+        const wFiveTitle = temp.measureText('FIVE').width
+        const titleRowW = pad * 2 + wMathTitle + wFiveTitle
+        const rowFormW = pad + forms.length * 26 + pad
+        const contentW = Math.max(titleRowW, rowRankStarsW, rowFormW)
+        const w = Math.max(320, Math.min(520, contentW))
+        const h = 124
+        const canvas = document.createElement('canvas')
+        const dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2)
+        canvas.width = Math.round(w * dpr)
+        canvas.height = Math.round(h * dpr)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(null)
+          return
+        }
+        ctx.scale(dpr, dpr)
+        this.drawShareBadge(ctx, w, h)
+        canvas.toBlob((blob) => resolve(blob), 'image/png')
+      })
+    },
+    async shareCopyText () {
+      try {
+        await this.copyPlainText(this.getShareCaptionText())
+        this.showSnackbar('Teks & link disalin')
+      } catch (error) {
+        this.showSnackbar(`Gagal salin teks. [${error}]`)
+      }
+    },
+    async shareCopyImage () {
+      try {
+        if (!navigator.clipboard || !window.ClipboardItem) {
+          this.showSnackbar('Browser tidak mendukung salin gambar')
+          return
+        }
+        const blob = await this.buildShareImageBlob()
+        if (!blob) {
+          this.showSnackbar('Gagal membuat gambar')
+          return
+        }
+        await navigator.clipboard.write([
+          new ClipboardItem({ [blob.type]: Promise.resolve(blob) })
+        ])
+        this.showSnackbar('Gambar disalin — tempel di sosmed')
+      } catch (error) {
+        this.showSnackbar(`Gagal salin gambar (izin / HTTPS). [${error}]`)
+      }
+    },
     latestOutcomeKey (rslt) {
       if (rslt.outcome === 'up' || rslt.outcome === 'down' || rslt.outcome === 'stay') {
         return rslt.outcome
@@ -489,32 +715,6 @@ export default {
     // update localForage
     async setForage () {
       await this.$localForage.setItem('mathfive', this.getAllStore)
-    },
-    shareIt () {
-      let star = ''
-      for (let i = 0; i < this.getInitStats.star; i++) { star = star + '⭐' }
-      let form = ''
-      this.getAllStats.form.forEach((x) => {
-        form = form + this.getTextClassForm(x).icon
-      })
-      const text = `i'm ${this.rankMapping} ${star} - ${form} - https://mathfive.vercel.app/`
-      if (window.clipboardData && window.clipboardData.setData) {
-        window.clipboardData.setData('Text', text)
-      } else if (document.queryCommandSupported && document.queryCommandSupported('copy')) {
-        const textarea = document.createElement('textarea')
-        textarea.textContent = text
-        textarea.style.position = 'fixed'
-        document.body.appendChild(textarea)
-        textarea.select()
-        try {
-          document.execCommand('copy')
-        } catch (error) {
-          this.showSnackbar(`Copy to clipboard failed. [${error}]`)
-        } finally {
-          document.body.removeChild(textarea)
-        }
-      }
-      this.showSnackbar('copied to clipboard')
     },
     showSnackbar (msg) {
       this.snackbar = msg
