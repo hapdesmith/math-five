@@ -157,17 +157,42 @@
               Kunci : {{ rslt.answer }}
             </p>
             <p class="text-sm inline mx-1 text-sky-600">
-              Jawabanmu : {{ rslt.myAnswer }}
+              Jawab : {{ rslt.myAnswer }}
             </p>
             <p class="text-sm inline">
               {{ rslt.timeSpent / 1000 }}s
             </p>
           </div>
-          <div class="mb-4 text-center">
-            <div class="text-5xl mb-2 mt-4" v-html="getEmotScore" />
-            <div class="text-base">
-              Waktu Rata - rata : {{ getAvgTime }}s
-            </div>
+          <div class="mt-2 mx-auto max-w-md border-2 border-slate-100 p-2 text-left text-base text-slate-600 space-y-2">
+            <p :class="`mx-1 text-sm w-10 h-10 inline-flex items-center justify-center uppercase text-slate-100 font-black ${getAvgTime.toFixed(2) < getLimitUpSec ? 'bg-emerald-600' : 'bg-rose-600'}`">
+              {{ getAvgTime.toFixed(2) < getLimitUpSec ? 'W' : 'L' }}
+            </p>
+            Waktu rata-rata: {{ getAvgTime.toFixed(2) }}s
+          </div>
+          <div class="mt-2 mx-auto max-w-md border-2 border-slate-100 p-4 text-left text-sm text-slate-600 space-y-2">
+            <p :class="`text-base font-bold text-center uppercase mb-1 ${sessionOutcomeHeadline === 'NAIK RANK' ? 'text-emerald-600' : sessionOutcomeHeadline === 'TURUN RANK' ? 'text-rose-600' : 'text-slate-500'}`">
+              {{ sessionOutcomeHeadline }}
+            </p>
+            <p class="space-y-1 text-slate-600">
+              <span
+                v-for="(line, ri) in sessionOutcome.reasonLines"
+                :key="`reason-${ri}`"
+              >
+                {{ line }}
+              </span>
+            </p>
+            <!-- info rank -->
+            <p class="text-xs font-bold uppercase text-slate-500 tracking-wide">
+              Batas waktu (rank saat main)
+            </p>
+            <p>
+              <span class="text-emerald-700 uppercase font-semibold">Naik Rank:</span>
+              skor 5/5 dan waktu rata-rata ≤ {{ getLimitUpSec }}s.
+            </p>
+            <p>
+              <span class="text-rose-700 uppercase font-semibold">Turun Rank:</span>
+              benar ≤2 atau waktu rata-rata ≥ {{ getLimitDownSec }}s.
+            </p>
           </div>
         </div>
         <div>
@@ -206,9 +231,29 @@
             <div class="text-slate-300 text-base text-medium mb-1">
               Pertanyaan no {{ index + 1 }}
             </div>
-            <!-- <div class="text-slate-300 text-base text-medium mb-4">
-              Sisa Waktu <span class="text-amber-600 text-medium">{{ countdownTimer }}</span> detik
-            </div> -->
+            <div class="mb-4 text-left w-full max-w-md mx-auto space-y-2">
+              <div
+                class="rounded-xl border-2 border-sky-100 bg-gradient-to-b from-sky-50/90 to-white px-3 py-3 shadow-sm"
+              >
+                <div class="flex items-end justify-between gap-2 mb-2">
+                  <span class="text-[10px] font-bold uppercase text-slate-500 tracking-wide">Waktu</span>
+                  <span
+                    :class="`text-3xl font-black tabular-nums leading-none tracking-tight ${questionTimerOverPace ? 'text-amber-600' : questionTimerLimitDown ? 'text-rose-600' : 'text-sky-600'}`"
+                  >
+                    {{ displayElapsedSec }}<span class="text-lg font-bold text-slate-400">s</span>
+                  </span>
+                </div>
+                <div class="h-2.5 rounded-full bg-slate-200/90 overflow-hidden">
+                  <div
+                    :class="`h-full rounded-full will-change-[width] ${questionTimerOverPace ? 'bg-amber-500' : questionTimerLimitDown ? 'bg-rose-500' : 'bg-sky-500'}`"
+                    :style="{ width: `${questionTimerProgressPct}%`, transition: 'width 80ms linear' }"
+                  />
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1.5">
+                  Bar indikator: ~{{ getLimitUpSec }}s per soal jika waktu dirata lima soal (target naik).
+                </p>
+              </div>
+            </div>
             <div :class="`text-sky-600 ${getQuestionClass} font-black mb-4`">
               {{ qst.question }}
             </div>
@@ -250,6 +295,7 @@
 import { mapGetters, mapActions, mapMutations } from 'vuex'
 import MathQuestion from '@/models/math-game'
 import MathHeader from '@/components/MathHeader.vue'
+import { buildOutcomeReasons } from '~/store'
 
 const SHARE_SITE_PATH = '/'
 
@@ -268,7 +314,9 @@ export default {
     baseTime: 3,
     countdownTimer: 0,
     snackbar: '',
-    snackbarToggle: false
+    snackbarToggle: false,
+    elapsedMs: 0,
+    questionTimerRaf: null
   }),
   computed: {
     ...mapGetters([
@@ -322,6 +370,44 @@ export default {
     getCurrentTimeLimit () {
       return this.baseTime + this.getInitStats.rank
     },
+    getLimitUpSec () {
+      return this.baseTime + this.getInitStats.rank
+    },
+    getLimitDownSec () {
+      return 2 * this.baseTime + this.getInitStats.rank
+    },
+    displayElapsedSec () {
+      return (this.elapsedMs / 1000).toFixed(2)
+    },
+    questionTimerProgressPct () {
+      const lim = this.getLimitUpSec * 1000
+      if (lim <= 0) { return 0 }
+      return Math.min(100, (this.elapsedMs / lim) * 100)
+    },
+    questionTimerOverPace () {
+      return this.elapsedMs > this.getLimitUpSec * 1000 && this.elapsedMs < this.getLimitDownSec * 1000
+    },
+    questionTimerLimitDown () {
+      return this.elapsedMs > this.getLimitDownSec * 1000
+    },
+    sessionOutcome () {
+      if (!this.isEnded) {
+        return { outcome: 'stay', reasonLines: [] }
+      }
+      return buildOutcomeReasons({
+        result: this.result,
+        rUp: this.isEligibleStarUp,
+        rDown: this.isEligibleStarDown,
+        avg: this.getAvgTime,
+        rank: this.getInitStats.rank
+      })
+    },
+    sessionOutcomeHeadline () {
+      const o = this.sessionOutcome.outcome
+      if (o === 'up') { return 'NAIK RANK' }
+      if (o === 'down') { return 'TURUN RANK' }
+      return 'RANK TETAP'
+    },
     isEnded () {
       return this.result.length === 5
     },
@@ -351,6 +437,14 @@ export default {
       if (this.getAttemptRemaining === 0) { this.setRemainingAttempt(5) }
     } else {
       // show latest result & time for next play
+    }
+  },
+  beforeDestroy () {
+    this.stopQuestionTimer()
+  },
+  watch: {
+    isStarted (v) {
+      if (!v) { this.stopQuestionTimer() }
     }
   },
   methods: {
@@ -649,6 +743,24 @@ export default {
       }
       return this.shuffleArray(Array.from(set))
     },
+    stopQuestionTimer () {
+      if (this.questionTimerRaf != null) {
+        cancelAnimationFrame(this.questionTimerRaf)
+        this.questionTimerRaf = null
+      }
+    },
+    startQuestionTimer () {
+      this.stopQuestionTimer()
+      const loop = () => {
+        if (!this.isStarted || this.isEnded || !this.currentTimeStart) {
+          this.stopQuestionTimer()
+          return
+        }
+        this.elapsedMs = Math.max(0, Date.now() - this.currentTimeStart)
+        this.questionTimerRaf = requestAnimationFrame(loop)
+      }
+      this.questionTimerRaf = requestAnimationFrame(loop)
+    },
     async init () {
       const x = new MathQuestion(this.getInitStats.rank, this.getInitStats.star, 5)
       const raw = x.makeQuestion()
@@ -659,13 +771,14 @@ export default {
       this.currentTimeStart = new Date().getTime()
       this.result = []
       this.currentQuestion = 0
-      // this.countdownTimer = this.getCurrentTimeLimit
-      // this.startCountdown()
+      this.elapsedMs = 0
       await this.$nextTick()
+      this.startQuestionTimer()
     },
     async confirmAnswer (qst, chosen) {
       const picked = Number(chosen)
       if (Number.isNaN(picked)) { return }
+      this.stopQuestionTimer()
       const timeEnd = new Date().getTime()
       this.result.push({
         ...qst,
@@ -674,9 +787,12 @@ export default {
         timeSpent: timeEnd - this.currentTimeStart
       })
       this.currentTimeStart = timeEnd
-      // this.countdownTimer = this.getCurrentTimeLimit
+      this.elapsedMs = 0
       if (this.currentQuestion < 4) { this.currentQuestion++ }
       await this.$nextTick()
+      if (!this.isEnded) {
+        this.startQuestionTimer()
+      }
     },
     // handle attempt calculation and end of game if user has no attempt left
     handleAttempts () {

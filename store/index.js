@@ -215,6 +215,8 @@ export const actions = {
   }
 }
 
+export { buildOutcomeReasons }
+
 export default {
   state,
   getters,
