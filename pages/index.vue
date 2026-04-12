@@ -163,11 +163,38 @@
               {{ rslt.timeSpent / 1000 }}s
             </p>
           </div>
-          <div class="mt-2 mx-auto max-w-md border-2 border-slate-100 p-2 text-left text-base text-slate-600 space-y-2">
-            <p :class="`mx-1 text-sm w-10 h-10 inline-flex items-center justify-center uppercase text-slate-100 font-black ${getAvgTime.toFixed(2) < getLimitUpSec ? 'bg-emerald-600' : 'bg-rose-600'}`">
+          <div class="mt-2 mx-auto max-w-md border-2 border-slate-100 p-2 text-left text-base text-slate-600 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p :class="`mx-1 text-sm w-10 h-10 shrink-0 inline-flex items-center justify-center uppercase text-slate-100 font-black ${getAvgTime.toFixed(2) < getLimitUpSec ? 'bg-emerald-600' : 'bg-rose-600'}`">
               {{ getAvgTime.toFixed(2) < getLimitUpSec ? 'W' : 'L' }}
             </p>
-            Waktu rata-rata: {{ getAvgTime.toFixed(2) }}s
+            <span class="inline-flex flex-wrap items-center gap-1">
+              <span>Waktu rata-rata: {{ getAvgTime.toFixed(2) }}s</span>
+              <span class="group relative inline-flex ml-2">
+                <button
+                  type="button"
+                  class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-[10px] font-bold leading-none text-slate-500 hover:border-slate-400 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+                  aria-label="Batas waktu menurut rank saat bermain"
+                >
+                  i
+                </button>
+                <div
+                  class="invisible absolute left-1/2 top-full z-20 mt-1 w-[min(18rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-slate-200 bg-white p-2 text-left text-xs font-normal normal-case tracking-normal text-slate-600 shadow-lg group-hover:visible group-focus-within:visible"
+                  role="tooltip"
+                >
+                  <p class="mb-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                    Batas waktu (rank saat main)
+                  </p>
+                  <p class="mb-1">
+                    <span class="font-semibold text-emerald-700 uppercase">Naik Rank:</span>
+                    skor 5/5 dan waktu rata-rata ≤ {{ getLimitUpSec }}s.
+                  </p>
+                  <p>
+                    <span class="font-semibold text-rose-700 uppercase">Turun Rank:</span>
+                    benar ≤2 atau waktu rata-rata ≥ {{ getLimitDownSec }}s.
+                  </p>
+                </div>
+              </span>
+            </span>
           </div>
           <div class="mt-2 mx-auto max-w-md border-2 border-slate-100 p-4 text-left text-sm text-slate-600 space-y-2">
             <p :class="`text-base font-bold text-center uppercase mb-1 ${sessionOutcomeHeadline === 'NAIK RANK' ? 'text-emerald-600' : sessionOutcomeHeadline === 'TURUN RANK' ? 'text-rose-600' : 'text-slate-500'}`">
@@ -180,18 +207,6 @@
               >
                 {{ line }}
               </span>
-            </p>
-            <!-- info rank -->
-            <p class="text-xs font-bold uppercase text-slate-500 tracking-wide">
-              Batas waktu (rank saat main)
-            </p>
-            <p>
-              <span class="text-emerald-700 uppercase font-semibold">Naik Rank:</span>
-              skor 5/5 dan waktu rata-rata ≤ {{ getLimitUpSec }}s.
-            </p>
-            <p>
-              <span class="text-rose-700 uppercase font-semibold">Turun Rank:</span>
-              benar ≤2 atau waktu rata-rata ≥ {{ getLimitDownSec }}s.
             </p>
           </div>
         </div>
