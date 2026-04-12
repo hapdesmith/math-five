@@ -32,7 +32,7 @@
             Kamu harus menyelesaikan setiap dalam waktu <b>kurang dari 4/5/6/7/8 detik</b> berdasarkan rank
           </li>
           <li class="mb-2">
-            Kamu punya <b>5 kali kesempatan untuk gagal </b>setiap harinya. Kesempatan akan ter-reset <b>setelah Kamu menunggu 24 jam </b>
+            Kamu punya <b>5 kali kesempatan untuk gagal</b> per siklus. Kesempatan akan ter-reset <b>setelah Kamu menunggu 30 menit</b>
           </li>
           <li class="mb-2">
             Setiap kali kamu gagal menyelesaikan 1 ronde, kamu akan kehilangan <b>1 kesempatan</b>. <b>GAME IS OVER</b> ketika kesempatanmu habis

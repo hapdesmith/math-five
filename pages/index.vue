@@ -18,9 +18,25 @@
         </p>
         <div class="border-2 border-slate-100 p-4 mt-2 text-left mb-4">
           <div class="flex flex-row justify-center mb-2">
-            <div class="flex flex-col">
+            <div class="flex flex-col items-center">
               <span :class="`border-2 ${getRankClass(getAllStats.highestRank).css} px-3 py-0 text-slate-100 rounded-2xl text-xs font-bold uppercase text-center`">{{ getRankClass(getAllStats.highestRank).text }}</span>
-              Rank Tertinggi
+              <div
+                class="flex flex-row justify-center items-center gap-0.5 mt-1"
+                role="img"
+                :aria-label="`${getHighestStarDisplay} bintang`"
+              >
+                <svg
+                  v-for="n in getHighestStarDisplay"
+                  :key="`highest-star-${n}`"
+                  xmlns="http://www.w3.org/2000/svg"
+                  :class="`h-5 w-5 ${getHighestRankStarClass} inline`"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </div>
+              <span class="text-xs text-slate-400 uppercase mt-0.5">Rank Tertinggi</span>
             </div>
           </div>
           <div class="flex flex-row mb-2">
@@ -65,23 +81,44 @@
         <p class="text-slate-500 text-base font-bold uppercase">
           Hasil Terkini :
         </p>
-        <div v-for="(rslt, index) in getLatestResult" :key="index" class="border-2 border-slate-100 p-2 mt-2 text-left flex flex-row justify-center items-center">
-          <div class="flex flex-col w-2/4 text-center">
-            <p class="text-sky-600 text-xl font-bold">
-              {{ rslt.score }}/5
-            </p>
-            Score
-          </div>
-          <div class="flex flex-row justify-center mx-2">
-            <div v-for="(round, index) in rslt.round" :key="index" :class="`${round ? 'bg-emerald-600' : 'bg-rose-600'} w-7 text-center text-xs uppercase font-bold p-2 mr-1 uppercase text-white`">
-              {{ round ? 'W' : 'L' }}
+        <div v-for="(rslt, idx) in getLatestResult" :key="idx" class="border-2 border-slate-100 p-3 mt-2 text-left">
+          <div class="flex flex-row flex-wrap justify-center items-center gap-2 mb-3">
+            <div class="flex flex-col text-center min-w-[4.5rem]">
+              <p class="text-sky-600 text-xl font-bold">
+                {{ rslt.score }}/5
+              </p>
+              <span class="text-xs text-slate-400">Skor</span>
+            </div>
+            <div class="flex flex-row justify-center flex-wrap gap-1">
+              <div
+                v-for="(round, rIdx) in rslt.round"
+                :key="rIdx"
+                :class="`${round ? 'bg-emerald-600' : 'bg-rose-600'} w-7 text-center text-xs uppercase font-bold p-2 text-white`"
+              >
+                {{ round ? 'W' : 'L' }}
+              </div>
+            </div>
+            <div class="flex flex-col text-center min-w-[5rem]">
+              <p class="text-sky-600 text-xl font-bold">
+                {{ rslt.averageTime.toFixed(2) }}s
+              </p>
+              <span class="text-xs text-slate-400">Rata-rata</span>
             </div>
           </div>
-          <div class="flex flex-col w-2/4 text-center">
-            <p class="text-sky-600 text-xl font-bold">
-              {{ rslt.averageTime.toFixed(2) }}s
+          <div class="flex flex-col gap-2">
+            <div class="flex justify-center">
+              <span :class="`inline-block border-2 px-3 py-1 rounded-2xl text-xs font-bold uppercase text-white ${getLatestOutcomeClass(rslt)}`">
+                {{ getLatestOutcomeLabel(rslt) }}
+              </span>
+            </div>
+            <p v-if="getLatestReasonLines(rslt).length" class="text-sm text-slate-600 list-disc list-inside space-y-1">
+              <span v-for="(line, lineIdx) in getLatestReasonLines(rslt)" :key="lineIdx">
+                {{ line }}
+              </span>
             </p>
-            Waktu Rata - rata
+            <p v-else class="text-center text-xs text-slate-400 italic">
+              Riwayat lama — detail alasan tidak tersimpan.
+            </p>
           </div>
         </div>
         <div class="w-full h-14" />
@@ -248,6 +285,20 @@ export default {
     rankMapping () {
       return ['-', 'bronze', 'silver', 'gold', 'diamond', 'goat'][this.getInitStats.rank]
     },
+    getHighestStarDisplay () {
+      const s = this.getAllStats.highestStar
+      return s != null ? s : 1
+    },
+    getHighestRankStarClass () {
+      const map = {
+        1: 'text-amber-600',
+        2: 'text-slate-400',
+        3: 'text-amber-300',
+        4: 'text-fuchsia-800',
+        5: 'text-rose-700'
+      }
+      return map[this.getAllStats.highestRank] || 'text-slate-400'
+    },
     getAvgTime () {
       return (this.result.map(x => x.timeSpent).reduce((x, y) => x + y, 0)) / 5000
     },
@@ -315,6 +366,33 @@ export default {
         text: text[rank],
         css: css[rank]
       }
+    },
+    latestOutcomeKey (rslt) {
+      if (rslt.outcome === 'up' || rslt.outcome === 'down' || rslt.outcome === 'stay') {
+        return rslt.outcome
+      }
+      if (rslt.isRankUp) { return 'up' }
+      if (rslt.isRankDown) { return 'down' }
+      return 'stay'
+    },
+    getLatestOutcomeLabel (rslt) {
+      const labels = { up: 'Naik', down: 'Turun', stay: 'Tetap' }
+      return labels[this.latestOutcomeKey(rslt)]
+    },
+    getLatestOutcomeClass (rslt) {
+      const key = this.latestOutcomeKey(rslt)
+      const classes = {
+        up: 'bg-emerald-600 border-emerald-700',
+        down: 'bg-rose-600 border-rose-700',
+        stay: 'bg-slate-500 border-slate-600'
+      }
+      return classes[key]
+    },
+    getLatestReasonLines (rslt) {
+      if (rslt.reasonLines && rslt.reasonLines.length) {
+        return rslt.reasonLines
+      }
+      return []
     },
     startMath () {
       this.isStarted = true
