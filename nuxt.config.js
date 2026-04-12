@@ -1,4 +1,3 @@
-
 export default {
   /*
   ** Nuxt rendering mode
@@ -29,7 +28,7 @@ export default {
   ** Global CSS
   */
   css: [
-    '@/assets/css/tailwind.css',
+    '@/assets/css/tailwind.css'
   ],
   /*
   ** Plugins to load before mounting the App
@@ -51,7 +50,7 @@ export default {
     // Doc: https://github.com/nuxt-community/stylelint-module
     // '@nuxtjs/stylelint-module',
     '@nuxt/postcss8',
-    '@nuxtjs/localforage',
+    '@nuxtjs/localforage'
   ],
   /*
   ** Nuxt.js modules
@@ -66,8 +65,8 @@ export default {
     postcss: {
       plugins: {
         tailwindcss: {},
-        autoprefixer: {},
-      },
-    },
+        autoprefixer: {}
+      }
+    }
   }
 }

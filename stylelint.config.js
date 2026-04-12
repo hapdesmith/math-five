@@ -2,9 +2,26 @@ module.exports = {
   extends: [
     'stylelint-config-standard'
   ],
-  // add your custom config here
-  // https://stylelint.io/user-guide/configuration
   rules: {
-    'no-eol-whitespace' : false,
-  }
+    'at-rule-no-unknown': [
+      true,
+      {
+        ignoreAtRules: [
+          'tailwind',
+          'apply',
+          'layer',
+          'config',
+          'screen'
+        ]
+      }
+    ],
+    'property-no-vendor-prefix': null,
+    'selector-class-pattern': null
+  },
+  overrides: [
+    {
+      files: ['**/*.{vue,html}'],
+      customSyntax: 'postcss-html'
+    }
+  ]
 }

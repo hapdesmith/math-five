@@ -38,7 +38,7 @@
             Setiap kali kamu gagal menyelesaikan 1 ronde, kamu akan kehilangan <b>1 kesempatan</b>. <b>GAME IS OVER</b> ketika kesempatanmu habis
           </li>
           <li class="mb-2">
-            Jika kamu gagal dan <b>cuma berhasil menjawab < 2 pertanyaan dengan benar atau rata-rata waktu menjawab lebih dari 7/8/9/10/11 detik</b> maka kamu akan kehilangan 1 bintang
+            Jika kamu gagal dan <b>cuma berhasil menjawab &lt; 2 pertanyaan dengan benar atau rata-rata waktu menjawab lebih dari 7/8/9/10/11 detik</b> maka kamu akan kehilangan 1 bintang
           </li>
           <li class="mb-2">
             Setinggi apa rank yang bisa kamu capai ? Copy hasilmu di akhir permainan dan paste ke twitter or other social media ;) and tag me <b>@agungdlgs</b>

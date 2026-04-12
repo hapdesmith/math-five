@@ -160,10 +160,22 @@
             <div :class="`text-sky-600 ${getQuestionClass} font-black mb-4`">
               {{ qst.question }}
             </div>
-            <input :ref="`input-${index}`" v-model="currentAnswer" type="number" class="mb-2 p-2 border-2 border-slate-200 rounded focus:border-sky-300 focus:outline-none hover:border-sky-300 transition ease-in-out duration-300">
-            <button class="bg-sky-600 hover:bg-sky-800 p-2 transition ease-in-out duration-300 text-slate-100 rounded text-base font-medium uppercase" @click="confirmAnswer(qst, index)">
-              confirm
-            </button>
+            <div class="flex flex-col gap-3 text-left w-full mx-auto">
+              <label
+                v-for="(opt, optIdx) in qst.choices"
+                :key="`${index}-${optIdx}-${opt}`"
+                class="flex items-center gap-3 p-2 border-2 border-slate-200 rounded cursor-pointer hover:border-sky-300 transition ease-in-out duration-300 has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50"
+              >
+                <input
+                  type="radio"
+                  class="h-4 w-4 text-sky-600 focus:ring-sky-500"
+                  :name="`answer-${index}`"
+                  :value="opt"
+                  @change="confirmAnswer(qst, opt)"
+                >
+                <span class="text-sky-700 font-semibold text-lg">{{ opt }}</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -183,9 +195,9 @@
   </div>
 </template>
 <script>
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 import MathQuestion from '@/models/math-game'
 import MathHeader from '@/components/MathHeader.vue'
-import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 export default {
   name: 'IndexPage',
@@ -194,7 +206,6 @@ export default {
   },
   data: () => ({
     questions: [],
-    currentAnswer: '',
     currentQuestion: 0,
     totalQuestion: 5,
     currentTimeStart: 0,
@@ -309,32 +320,60 @@ export default {
       this.isStarted = true
       this.init()
     },
+    shuffleArray (arr) {
+      const a = arr.slice()
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[a[i], a[j]] = [a[j], a[i]]
+      }
+      return a
+    },
+    buildShuffledChoices (correct) {
+      const n = Number(correct)
+      const set = new Set([n])
+      const offsets = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 10, -10]
+      this.shuffleArray(offsets)
+      for (const o of offsets) {
+        if (set.size >= 4) { break }
+        const d = n + o
+        if (!set.has(d)) { set.add(d) }
+      }
+      let step = 8
+      while (set.size < 4) {
+        const d = n + step * (set.size % 2 === 0 ? 1 : -1)
+        step++
+        if (!set.has(d)) { set.add(d) }
+      }
+      return this.shuffleArray(Array.from(set))
+    },
     async init () {
       const x = new MathQuestion(this.getInitStats.rank, this.getInitStats.star, 5)
-      this.questions = x.makeQuestion()
+      const raw = x.makeQuestion()
+      this.questions = raw.map(q => ({
+        ...q,
+        choices: this.buildShuffledChoices(q.answer)
+      }))
       this.currentTimeStart = new Date().getTime()
       this.result = []
       this.currentQuestion = 0
       // this.countdownTimer = this.getCurrentTimeLimit
       // this.startCountdown()
       await this.$nextTick()
-      if (this.$refs['input-0'][0]) { this.$refs['input-0'][0].focus() }
     },
-    async confirmAnswer (qst) {
-      if (!this.currentAnswer.length) { return }
+    async confirmAnswer (qst, chosen) {
+      const picked = Number(chosen)
+      if (Number.isNaN(picked)) { return }
       const timeEnd = new Date().getTime()
       this.result.push({
         ...qst,
-        myAnswer: Number(this.currentAnswer),
-        isCorrect: qst.answer === Number(this.currentAnswer),
+        myAnswer: picked,
+        isCorrect: qst.answer === picked,
         timeSpent: timeEnd - this.currentTimeStart
       })
-      this.currentAnswer = ''
       this.currentTimeStart = timeEnd
       // this.countdownTimer = this.getCurrentTimeLimit
       if (this.currentQuestion < 4) { this.currentQuestion++ }
       await this.$nextTick()
-      if (this.$refs[`input-${this.currentQuestion}`][0]) { this.$refs[`input-${this.currentQuestion}`][0].focus() }
     },
     // handle attempt calculation and end of game if user has no attempt left
     handleAttempts () {
