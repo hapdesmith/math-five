@@ -1,6 +1,6 @@
 <template>
   <div class="text-center">
-    <div v-show="!isReadRules || isOpen" class="text-left bg-white p-2 absolute inset-0 flex flex-col justify-between">
+    <div v-show="!isReadRules || isOpen" class="text-left bg-white p-2 absolute inset-0 flex flex-col justify-between z-10">
       <div class="pb-9">
         <p class="border-0 border-b-2 border-slate-100 text-slate-500 text-sm font-bold uppercase pb-1 mb-1">
           Sistem Rank & Bintang :
